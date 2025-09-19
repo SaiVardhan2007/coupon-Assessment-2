@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { HomePage, LoginPage, SignupPage, CouponsPage, AdminPage, AdminDashboard, CreateCouponPage, CouponDetailsPage, ProfilePage, DemoPage, UserDashboard, AssessmentPage, ExamPage, ExamResultsPage } from './pages';
+import { HomePage, LoginPage, SignupPage, CouponsPage, AdminDashboard, CreateCouponPage, CouponDetailsPage, ProfilePage, DemoPage, UserDashboard, AssessmentPage, ExamPage, ExamResultsPage } from './pages';
 import { ProtectedRoute, AdminRoute, Navbar } from './components';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -90,11 +90,7 @@ const AppRoutes = () => {
         {/* Admin Routes */}
         <Route 
           path="/admin" 
-          element={
-            <AdminRoute>
-              <AdminPage />
-            </AdminRoute>
-          } 
+          element={<Navigate to="/admin/dashboard" replace />}
         />
         <Route 
           path="/admin/dashboard" 

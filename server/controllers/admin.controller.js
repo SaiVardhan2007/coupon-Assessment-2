@@ -259,10 +259,7 @@ const createCoupon = async (req, res) => {
       type,
       assignedUsers,
       maxUses,
-      expiryDate,
-      description,
-      discountValue,
-      discountType
+      expiryDate
     } = req.body;
 
     // Validate required fields
@@ -282,15 +279,18 @@ const createCoupon = async (req, res) => {
       });
     }
 
-    // Validate type-specific requirements
+    // Validate expiry date is in the future
+    if (new Date(expiryDate) <= new Date()) {
+      return res.status(400).json({ 
+        message: 'Expiry date must be in the future' 
+      });
+    }
+
+    // Prepare coupon data
     let couponData = {
       couponName: couponName.trim(),
       type,
-      expiryDate: new Date(expiryDate),
-      createdBy: req.user.id,
-      description: description?.trim() || '',
-      discountValue: discountValue || 0,
-      discountType: discountType || 'percentage'
+      expiryDate: new Date(expiryDate)
     };
 
     if (type === 'specific') {
@@ -329,21 +329,13 @@ const createCoupon = async (req, res) => {
       });
     }
 
-    // Validate expiry date is in the future
-    if (new Date(expiryDate) <= new Date()) {
-      return res.status(400).json({ 
-        message: 'Expiry date must be in the future' 
-      });
-    }
-
     // Create the coupon
     const coupon = new Coupon(couponData);
     await coupon.save();
 
-    // Populate the created coupon with user details if it's specific type
+    // Populate the created coupon with user details for response
     const populatedCoupon = await Coupon.findById(coupon._id)
-      .populate('assignedUsers', 'name email')
-      .populate('createdBy', 'name email');
+      .populate('assignedUsers', 'name email');
 
     // Send assignment emails for specific coupons
     if (type === 'specific' && populatedCoupon.assignedUsers.length > 0) {
@@ -357,9 +349,6 @@ const createCoupon = async (req, res) => {
             user.name,
             {
               couponName: populatedCoupon.couponName,
-              discountValue: populatedCoupon.discountValue,
-              discountType: populatedCoupon.discountType,
-              description: populatedCoupon.description,
               type: populatedCoupon.type,
               expiryDate: populatedCoupon.expiryDate,
               maxUses: populatedCoupon.maxUses,
@@ -427,7 +416,6 @@ const getCoupons = async (req, res) => {
   try {
     const coupons = await Coupon.find({})
       .populate('assignedUsers', 'name email')
-      .populate('createdBy', 'name email')
       .sort({ createdAt: -1 });
 
     res.json(coupons);
@@ -442,8 +430,7 @@ const getCouponDetails = async (req, res) => {
   try {
     const coupon = await Coupon.findById(req.params.id)
       .populate('assignedUsers', 'name email phone currentStudies city state')
-      .populate('usedBy.user', 'name email phone')
-      .populate('createdBy', 'name email');
+      .populate('usedBy', 'name email phone');
 
     if (!coupon) {
       return res.status(404).json({ message: 'Coupon not found' });
@@ -476,8 +463,7 @@ const toggleCouponStatus = async (req, res) => {
 
     // Return the updated coupon with populated fields
     const updatedCoupon = await Coupon.findById(coupon._id)
-      .populate('assignedUsers', 'name email')
-      .populate('createdBy', 'name email');
+      .populate('assignedUsers', 'name email');
 
     res.json({
       message: `Coupon ${coupon.isActive ? 'activated' : 'deactivated'} successfully`,

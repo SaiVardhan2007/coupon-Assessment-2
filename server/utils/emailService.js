@@ -284,12 +284,12 @@ const getCouponEmailTemplate = (userName, couponDetails, emailType = 'assignment
             <div class="coupon-title">${couponDetails.couponName}</div>
             
             <div class="discount-badge">
-              ${couponDetails.discountValue}${couponDetails.discountType === 'percentage' ? '%' : '$'} OFF
+              Assessment Coupon
             </div>
             
             ${couponDetails.couponName ? `<div class="coupon-code">${couponDetails.couponName}</div>` : ''}
             
-            ${couponDetails.description ? `<p style="color: #4a5568; margin: 15px 0;">${couponDetails.description}</p>` : ''}
+            <p style="color: #4a5568; margin: 15px 0;">Use this coupon for your assessment on our platform</p>
           </div>
 
           <!-- Details Grid -->
@@ -424,7 +424,7 @@ const sendCouponEmail = async (userEmail, userName, couponDetails, emailType = '
           'Your coupon is expiring soon!'}
         
         Coupon: ${couponDetails.couponName}
-        Discount: ${couponDetails.discountValue}${couponDetails.discountType === 'percentage' ? '%' : '$'} OFF
+        Type: ${couponDetails.type === 'specific' ? 'Personal Coupon' : 'General Coupon'}
         Expires: ${new Date(couponDetails.expiryDate).toLocaleDateString()}
         
         Visit our platform to use your coupon: https://yourapp.com

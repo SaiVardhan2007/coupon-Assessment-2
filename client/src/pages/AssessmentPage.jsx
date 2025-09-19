@@ -144,17 +144,26 @@ const AssessmentPage = () => {
   });
 
   const handleAttemptTest = (test) => {
-    setSelectedTest(test);
-    setShowCouponModal(true);
+    console.log('handleAttemptTest called with test:', test);
+    console.log('Current showCouponModal state before:', showCouponModal);
+    
+    // Reset all modal states first
     setCouponCode('');
     setCouponError('');
+    setIsRedeeming(false);
+    
+    // Set the selected test and show modal
+    setSelectedTest(test);
+    setShowCouponModal(true);
+    
+    console.log('Modal state set to true');
   };
 
   const handleCouponSubmit = async (e) => {
     e.preventDefault();
     
     if (!couponCode.trim()) {
-      setCouponError('Please enter a coupon code');
+      setCouponError('Please enter a coupon name');
       return;
     }
 
@@ -163,14 +172,14 @@ const AssessmentPage = () => {
 
     try {
       const response = await api.post('/api/user/coupons/redeem', {
-        couponCode: couponCode.trim()
+        couponName: couponCode.trim()
       });
 
       // Success! Navigate to exam page with test info and redemption details
-      navigate(`/exam/start`, {
+      navigate('/exam/start', {
         state: {
           testInfo: selectedTest,
-          redemptionDetails: response.data.redemption
+          redemptionDetails: response.data
         }
       });
       
@@ -179,6 +188,8 @@ const AssessmentPage = () => {
       
       if (error.response?.data?.message) {
         setCouponError(error.response.data.message);
+      } else if (error.response?.data?.error) {
+        setCouponError(error.response.data.error);
       } else {
         setCouponError('Failed to redeem coupon. Please try again.');
       }
@@ -396,8 +407,8 @@ const AssessmentPage = () => {
       </div>
 
       {/* Coupon Code Modal */}
-      {showCouponModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+      {showCouponModal && selectedTest && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" style={{ zIndex: 9999 }}>
           <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             {/* Background overlay */}
             <div 
@@ -406,7 +417,8 @@ const AssessmentPage = () => {
             ></div>
             
             {/* Modal */}
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6 relative z-10">
               <div className="sm:flex sm:items-start">
                 <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
                   <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,7 +427,7 @@ const AssessmentPage = () => {
                 </div>
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">
-                    Enter Coupon Code
+                    Enter Coupon Name
                   </h3>
                   {selectedTest && (
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg">
@@ -430,20 +442,20 @@ const AssessmentPage = () => {
                   )}
                   
                   <p className="text-sm text-gray-500 mb-4">
-                    Please enter your coupon code to proceed with the assessment.
+                    Please enter your coupon name to proceed with the assessment.
                   </p>
                   
                   <form onSubmit={handleCouponSubmit}>
                     <div className="mb-4">
                       <label htmlFor="couponCode" className="block text-sm font-medium text-gray-700 mb-2">
-                        Coupon Code
+                        Coupon Name
                       </label>
                       <input
                         type="text"
                         id="couponCode"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
-                        placeholder="Enter your coupon code"
+                        placeholder="Enter your coupon name"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         disabled={isRedeeming}
                         autoFocus

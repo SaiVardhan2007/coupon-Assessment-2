@@ -15,11 +15,11 @@ const loginLimiter = rateLimit({
 
 // Rate limiter for signup attempts
 const signupLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // Limit each IP to 3 signup requests per hour
+  windowMs: 15 * 60 * 1000, // 15 minutes (reduced from 1 hour for development)
+  max: 10, // Increased from 3 to 10 for development
   message: {
     success: false,
-    message: 'Too many signup attempts, please try again after 1 hour'
+    message: 'Too many signup attempts, please try again after 15 minutes'
   },
   standardHeaders: true,
   legacyHeaders: false,

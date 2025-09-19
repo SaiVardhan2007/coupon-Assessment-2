@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import CouponCard from '../components/CouponCard';
-import SearchFilter from '../components/SearchFilter';
-import Pagination from '../components/Pagination';
 import LoadingSpinner from '../components/LoadingSpinner';
 import api from '../api';
 
@@ -15,14 +13,13 @@ const CouponsPage = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   
   // Filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
-    status: 'all',
-    discountType: 'all',
-    dateRange: 'all',
+    status: 'all', // all, active, expired, inactive
+    type: 'all', // all, general, specific
     sortBy: 'createdAt',
     sortOrder: 'desc'
   });
@@ -38,7 +35,8 @@ const CouponsPage = () => {
   const fetchCoupons = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/coupons');
+      // Get available coupons for the user
+      const response = await api.get('/api/user/coupons/available');
       setCoupons(response.data);
       setError('');
     } catch (err) {
@@ -55,51 +53,31 @@ const CouponsPage = () => {
     // Apply search
     if (searchTerm) {
       filtered = filtered.filter(coupon =>
-        coupon.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        coupon.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        coupon.description.toLowerCase().includes(searchTerm.toLowerCase())
+        coupon.couponName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Apply filters
     if (filters.status !== 'all') {
       filtered = filtered.filter(coupon => {
-        if (filters.status === 'expired') {
-          return new Date(coupon.expiryDate) < new Date();
-        }
-        if (filters.status === 'used') {
-          return coupon.usageCount >= coupon.usageLimit;
-        }
-        return coupon.status === filters.status;
-      });
-    }
-
-    if (filters.discountType !== 'all') {
-      filtered = filtered.filter(coupon => coupon.discountType === filters.discountType);
-    }
-
-    if (filters.dateRange !== 'all') {
-      const now = new Date();
-      filtered = filtered.filter(coupon => {
-        const expiryDate = new Date(coupon.expiryDate);
-        switch (filters.dateRange) {
-          case 'today':
-            return expiryDate.toDateString() === now.toDateString();
-          case 'week':
-            const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-            return expiryDate <= weekFromNow && expiryDate >= now;
-          case 'month':
-            const monthFromNow = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-            return expiryDate <= monthFromNow && expiryDate >= now;
+        const isExpired = new Date(coupon.expiryDate) < new Date();
+        const isUsedUp = coupon.type === 'general' && coupon.usageCount >= coupon.maxUses;
+        
+        switch (filters.status) {
+          case 'active':
+            return coupon.isActive && !isExpired && !isUsedUp;
           case 'expired':
-            return expiryDate < now;
-          case 'expiring-soon':
-            const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-            return expiryDate <= threeDaysFromNow && expiryDate >= now;
+            return isExpired;
+          case 'inactive':
+            return !coupon.isActive;
           default:
             return true;
         }
       });
+    }
+
+    if (filters.type !== 'all') {
+      filtered = filtered.filter(coupon => coupon.type === filters.type);
     }
 
     // Apply sorting
@@ -130,11 +108,12 @@ const CouponsPage = () => {
 
   const handleRedeemCoupon = async (coupon) => {
     try {
-      await api.post(`/api/coupons/${coupon._id}/redeem`);
+      await api.post('/api/user/coupons/redeem', { couponName: coupon.couponName });
       fetchCoupons(); // Refresh the list
       alert('Coupon redeemed successfully!');
     } catch (err) {
-      alert('Failed to redeem coupon. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Failed to redeem coupon. Please try again.';
+      alert(errorMessage);
       console.error('Error redeeming coupon:', err);
     }
   };
@@ -158,7 +137,7 @@ const CouponsPage = () => {
               Available Coupons
             </h1>
             <p className="text-lg text-gray-600">
-              Discover and redeem amazing deals and discounts
+              Discover and redeem assessment platform coupons
             </p>
           </div>
 
@@ -169,11 +148,78 @@ const CouponsPage = () => {
           )}
 
           {/* Search and Filter */}
-          <SearchFilter
-            onSearch={setSearchTerm}
-            onFilter={setFilters}
-            filters={filters}
-          />
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Search */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Search Coupons
+                </label>
+                <input
+                  type="text"
+                  placeholder="Search by name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Status
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => setFilters({...filters, status: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="expired">Expired</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+
+              {/* Type Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type
+                </label>
+                <select
+                  value={filters.type}
+                  onChange={(e) => setFilters({...filters, type: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="all">All Types</option>
+                  <option value="general">General</option>
+                  <option value="specific">Specific</option>
+                </select>
+              </div>
+
+              {/* Sort */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sort By
+                </label>
+                <select
+                  value={`${filters.sortBy}-${filters.sortOrder}`}
+                  onChange={(e) => {
+                    const [sortBy, sortOrder] = e.target.value.split('-');
+                    setFilters({...filters, sortBy, sortOrder});
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="createdAt-desc">Newest First</option>
+                  <option value="createdAt-asc">Oldest First</option>
+                  <option value="expiryDate-asc">Expiring Soon</option>
+                  <option value="expiryDate-desc">Expiring Later</option>
+                  <option value="couponName-asc">Name A-Z</option>
+                  <option value="couponName-desc">Name Z-A</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
           {/* Results Summary */}
           {filteredCoupons.length > 0 && (
@@ -200,15 +246,30 @@ const CouponsPage = () => {
                 ))}
               </div>
 
-              {/* Pagination */}
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                itemsPerPage={itemsPerPage}
-                totalItems={filteredCoupons.length}
-                onItemsPerPageChange={setItemsPerPage}
-              />
+              {/* Simple Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-2 mt-8">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  
+                  <span className="px-3 py-2 text-sm text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             <div className="text-center py-12">
@@ -219,7 +280,7 @@ const CouponsPage = () => {
               <p className="text-gray-500">
                 {searchTerm || Object.values(filters).some(f => f !== 'all' && f !== 'createdAt' && f !== 'desc')
                   ? 'Try adjusting your search or filters'
-                  : 'No coupons are currently available'}
+                  : 'No coupons are currently available for you'}
               </p>
             </div>
           )}

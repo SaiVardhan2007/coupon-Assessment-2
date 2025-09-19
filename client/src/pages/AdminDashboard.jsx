@@ -411,7 +411,7 @@ const AdminDashboard = () => {
                       Coupon Management
                     </h3>
                     <p className="text-blue-700 mb-4">
-                      Create new coupons or manage existing ones through the dedicated Admin Panel.
+                      Create new coupons and manage existing ones.
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <button
@@ -423,15 +423,6 @@ const AdminDashboard = () => {
                         </svg>
                         Create New Coupon
                       </button>
-                      <a
-                        href="/admin"
-                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                      >
-                        Go to Admin Panel
-                        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </a>
                     </div>
                   </div>
 
@@ -653,7 +644,13 @@ const CouponCard = ({ coupon, onToggleStatus, onViewDetails, isToggling }) => {
   };
 
   const isExpired = new Date(coupon.expiryDate) < new Date();
-  const usagePercentage = coupon.maxUses > 0 ? (coupon.usageCount / coupon.maxUses) * 100 : 0;
+  const usagePercentage = coupon.type === 'general' && coupon.maxUses > 0 
+    ? (coupon.usageCount / coupon.maxUses) * 100 
+    : 0;
+
+  const getCouponTypeIcon = () => {
+    return coupon.type === 'specific' ? '👥' : '🌐';
+  };
 
   return (
     <div className={`bg-white rounded-lg shadow-md border-l-4 overflow-hidden ${
@@ -667,16 +664,19 @@ const CouponCard = ({ coupon, onToggleStatus, onViewDetails, isToggling }) => {
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h4 className="text-lg font-semibold text-gray-900 mb-1">
-              {coupon.couponName}
-            </h4>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">{getCouponTypeIcon()}</span>
+              <h4 className="text-lg font-semibold text-gray-900">
+                {coupon.couponName}
+              </h4>
+            </div>
             <div className="flex items-center space-x-2">
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 coupon.type === 'specific' 
                   ? 'bg-purple-100 text-purple-800' 
                   : 'bg-blue-100 text-blue-800'
               }`}>
-                {coupon.type === 'specific' ? 'Specific Users' : 'General'}
+                {coupon.type === 'specific' ? 'Specific Users' : 'General Use'}
               </span>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 coupon.isActive
@@ -695,70 +695,40 @@ const CouponCard = ({ coupon, onToggleStatus, onViewDetails, isToggling }) => {
           </div>
         </div>
 
-        {/* Discount Info */}
-        <div className="mb-4">
-          <div className="flex items-center mb-2">
-            <span className="text-2xl font-bold text-indigo-600">
-              {coupon.discountValue}
-              {coupon.discountType === 'percentage' ? '%' : '$'}
-            </span>
-            <span className="ml-2 text-sm text-gray-600">
-              {coupon.discountType === 'percentage' ? 'OFF' : 'DISCOUNT'}
-            </span>
-          </div>
-          {coupon.description && (
-            <p className="text-sm text-gray-600 line-clamp-2">
-              {coupon.description}
-            </p>
-          )}
-        </div>
-
         {/* Usage Stats */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-600 mb-1">
-            <span>Usage</span>
-            <span>{coupon.usageCount} / {coupon.maxUses}</span>
+        {coupon.type === 'general' ? (
+          <div className="mb-4">
+            <div className="flex justify-between text-sm text-gray-600 mb-1">
+              <span>Usage</span>
+              <span>{coupon.usageCount || 0} / {coupon.maxUses}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  usagePercentage >= 100 
+                    ? 'bg-red-500' 
+                    : usagePercentage >= 75 
+                      ? 'bg-yellow-500' 
+                      : 'bg-green-500'
+                }`}
+                style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className={`h-2 rounded-full transition-all duration-300 ${
-                usagePercentage >= 100 
-                  ? 'bg-red-500' 
-                  : usagePercentage >= 75 
-                    ? 'bg-yellow-500' 
-                    : 'bg-green-500'
-              }`}
-              style={{ width: `${Math.min(usagePercentage, 100)}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Assigned Users (for specific coupons) */}
-        {coupon.type === 'specific' && (
+        ) : (
           <div className="mb-4">
             <div className="flex items-center text-sm text-gray-600 mb-2">
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
               </svg>
-              <span>Assigned to {coupon.assignedUsers?.length || 0} users</span>
+              <span>Assigned: {coupon.assignedUsers?.length || 0} users</span>
             </div>
-            {coupon.assignedUsers && coupon.assignedUsers.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {coupon.assignedUsers.slice(0, 3).map((user, index) => (
-                  <span 
-                    key={user._id || index}
-                    className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
-                  >
-                    {user.name || user.email}
-                  </span>
-                ))}
-                {coupon.assignedUsers.length > 3 && (
-                  <span className="inline-flex items-center px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded">
-                    +{coupon.assignedUsers.length - 3} more
-                  </span>
-                )}
-              </div>
-            )}
+            <div className="flex items-center text-sm text-gray-600">
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Used by: {coupon.usedBy?.length || 0} users</span>
+            </div>
           </div>
         )}
 
@@ -774,6 +744,16 @@ const CouponCard = ({ coupon, onToggleStatus, onViewDetails, isToggling }) => {
                 <span className="ml-2 text-red-600 font-medium">(Expired)</span>
               )}
             </span>
+          </div>
+        </div>
+
+        {/* Created Date */}
+        <div className="mb-4">
+          <div className="flex items-center text-sm text-gray-500">
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Created: {formatDate(coupon.createdAt)}</span>
           </div>
         </div>
 

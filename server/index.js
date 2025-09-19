@@ -6,7 +6,6 @@ require('dotenv').config();
 // Import routes
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
-const couponRoutes = require('./routes/coupon.routes');
 const adminRoutes = require('./routes/admin.routes');
 const { generalLimiter } = require('./middleware/rateLimiter');
 
@@ -43,9 +42,6 @@ app.use('/api/auth', authRoutes);
 // User routes
 app.use('/api/users', userRoutes);
 app.use('/api/user', userRoutes);
-
-// Coupon routes
-app.use('/api/coupons', couponRoutes);
 
 // Admin routes
 app.use('/api/admin', adminRoutes);

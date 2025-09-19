@@ -5,27 +5,20 @@ const { sendCouponEmail } = require('../utils/emailService');
 // Redeem a coupon
 const redeemCoupon = async (req, res) => {
   try {
-    const { couponCode, couponId } = req.body;
+    const { couponName } = req.body;
     const userId = req.user.id;
 
-    // Validate input - either couponCode or couponId is required
-    if (!couponCode && !couponId) {
+    // Validate input - couponName is required
+    if (!couponName) {
       return res.status(400).json({ 
-        message: 'Either couponCode or couponId is required' 
+        message: 'couponName is required' 
       });
     }
 
-    // Find the coupon by code or ID
-    let coupon;
-    if (couponId) {
-      coupon = await Coupon.findById(couponId)
-        .populate('assignedUsers', 'name email')
-        .populate('usedBy.user', 'name email');
-    } else {
-      coupon = await Coupon.findOne({ couponName: couponCode })
-        .populate('assignedUsers', 'name email')
-        .populate('usedBy.user', 'name email');
-    }
+    // Find the coupon by couponName
+    const coupon = await Coupon.findOne({ couponName })
+      .populate('assignedUsers', 'name email')
+      .populate('usedBy', 'name email');
 
     if (!coupon) {
       return res.status(404).json({ 
@@ -33,7 +26,7 @@ const redeemCoupon = async (req, res) => {
       });
     }
 
-    // Check if coupon exists and is active
+    // Check if coupon is active
     if (!coupon.isActive) {
       return res.status(400).json({ 
         message: 'Coupon is not active' 
@@ -47,15 +40,9 @@ const redeemCoupon = async (req, res) => {
       });
     }
 
-    // Check if coupon has reached maximum usage
-    if (coupon.usageCount >= coupon.maxUses) {
-      return res.status(400).json({ 
-        message: 'Coupon usage limit has been reached' 
-      });
-    }
-
-    // For 'specific' coupons, check if user is in assignedUsers list
+    // Type-specific validation
     if (coupon.type === 'specific') {
+      // For specific coupons, check if user is in assignedUsers
       const isUserAssigned = coupon.assignedUsers.some(user => 
         user._id.toString() === userId.toString()
       );
@@ -65,24 +52,40 @@ const redeemCoupon = async (req, res) => {
           message: 'You are not authorized to use this coupon' 
         });
       }
-    }
 
-    // Check if user has already used this coupon
-    const hasUserUsedCoupon = coupon.usedBy.some(usage => 
-      usage.user._id?.toString() === userId.toString() || usage.user.toString() === userId.toString()
-    );
+      // Check if user has already used this coupon
+      const hasUserUsedCoupon = coupon.usedBy.some(usedUserId => 
+        usedUserId.toString() === userId.toString()
+      );
 
-    if (hasUserUsedCoupon) {
-      return res.status(400).json({ 
-        message: 'You have already used this coupon' 
-      });
+      if (hasUserUsedCoupon) {
+        return res.status(400).json({ 
+          message: 'You have already used this coupon' 
+        });
+      }
+
+    } else if (coupon.type === 'general') {
+      // For general coupons, check usage limit
+      if (coupon.usageCount >= coupon.maxUses) {
+        return res.status(400).json({ 
+          message: 'Coupon usage limit has been reached' 
+        });
+      }
+
+      // Check if user has already used this coupon
+      const hasUserUsedCoupon = coupon.usedBy.some(usedUserId => 
+        usedUserId.toString() === userId.toString()
+      );
+
+      if (hasUserUsedCoupon) {
+        return res.status(400).json({ 
+          message: 'You have already used this coupon' 
+        });
+      }
     }
 
     // All validations passed - redeem the coupon
-    coupon.usedBy.push({
-      user: userId,
-      usedAt: new Date()
-    });
+    coupon.usedBy.push(userId);
     coupon.usageCount += 1;
 
     // If this is a general coupon and it has reached max uses, deactivate it
@@ -93,14 +96,13 @@ const redeemCoupon = async (req, res) => {
     // Save the updated coupon
     await coupon.save();
 
+    // Get user info for response
+    const user = await User.findById(userId, 'name email');
+
     // Populate the updated coupon for response
     const updatedCoupon = await Coupon.findById(coupon._id)
       .populate('assignedUsers', 'name email')
-      .populate('usedBy.user', 'name email')
-      .populate('createdBy', 'name email');
-
-    // Get user info for response
-    const user = await User.findById(userId, 'name email');
+      .populate('usedBy', 'name email');
 
     // Send redemption confirmation email (async, don't wait for it)
     sendCouponEmail(
@@ -108,9 +110,6 @@ const redeemCoupon = async (req, res) => {
       user.name,
       {
         couponName: updatedCoupon.couponName,
-        discountValue: updatedCoupon.discountValue,
-        discountType: updatedCoupon.discountType,
-        description: updatedCoupon.description,
         type: updatedCoupon.type,
         expiryDate: updatedCoupon.expiryDate,
         maxUses: updatedCoupon.maxUses,
@@ -130,12 +129,8 @@ const redeemCoupon = async (req, res) => {
           id: updatedCoupon._id,
           name: updatedCoupon.couponName,
           type: updatedCoupon.type,
-          discountValue: updatedCoupon.discountValue,
-          discountType: updatedCoupon.discountType,
-          description: updatedCoupon.description,
           usageCount: updatedCoupon.usageCount,
           maxUses: updatedCoupon.maxUses,
-          remainingUses: updatedCoupon.remainingUses,
           isActive: updatedCoupon.isActive,
           expiryDate: updatedCoupon.expiryDate
         },
@@ -144,9 +139,7 @@ const redeemCoupon = async (req, res) => {
           name: user.name,
           email: user.email
         },
-        redeemedAt: new Date(),
-        discountApplied: updatedCoupon.discountValue,
-        discountType: updatedCoupon.discountType
+        redeemedAt: new Date()
       }
     });
 
@@ -194,7 +187,6 @@ const getAvailableCoupons = async (req, res) => {
     // Find all potentially available coupons
     const coupons = await Coupon.find(query)
       .populate('assignedUsers', 'name email')
-      .populate('createdBy', 'name email')
       .sort({ createdAt: -1 });
 
     // Filter coupons based on user eligibility
@@ -208,8 +200,8 @@ const getAvailableCoupons = async (req, res) => {
       }
 
       // Check if user has already used this coupon
-      const hasUsed = coupon.usedBy.some(usage => 
-        usage.user.toString() === userId.toString()
+      const hasUsed = coupon.usedBy.some(usedUserId => 
+        usedUserId.toString() === userId.toString()
       );
       
       return !hasUsed;
@@ -236,31 +228,24 @@ const getRedeemedCoupons = async (req, res) => {
 
     // Find all coupons where user is in usedBy array
     const redeemedCoupons = await Coupon.find({
-      'usedBy.user': userId
+      usedBy: userId
     })
     .populate('assignedUsers', 'name email')
-    .populate('createdBy', 'name email')
-    .sort({ 'usedBy.usedAt': -1 });
+    .sort({ updatedAt: -1 });
 
     // Transform the data to include redemption details
     const redemptionHistory = redeemedCoupons.map(coupon => {
-      const userRedemption = coupon.usedBy.find(usage => 
-        usage.user.toString() === userId.toString()
-      );
-
       return {
         coupon: {
           id: coupon._id,
           name: coupon.couponName,
           type: coupon.type,
-          discountValue: coupon.discountValue,
-          discountType: coupon.discountType,
-          description: coupon.description,
-          expiryDate: coupon.expiryDate
+          expiryDate: coupon.expiryDate,
+          usageCount: coupon.usageCount,
+          maxUses: coupon.maxUses,
+          isActive: coupon.isActive
         },
-        redeemedAt: userRedemption?.usedAt,
-        discountApplied: coupon.discountValue,
-        discountType: coupon.discountType
+        redeemedAt: coupon.updatedAt // Using updatedAt as approximation since we don't store individual redemption times
       };
     });
 
@@ -304,7 +289,7 @@ const getUserCouponStats = async (req, res) => {
 
     // Count redeemed coupons
     const totalRedeemed = await Coupon.countDocuments({
-      'usedBy.user': userId
+      usedBy: userId
     });
 
     // Count expired coupons that were assigned to user
@@ -316,27 +301,12 @@ const getUserCouponStats = async (req, res) => {
       ]
     });
 
-    // Calculate total savings
-    const redeemedCoupons = await Coupon.find({
-      'usedBy.user': userId
-    });
-
-    let totalSavings = 0;
-    redeemedCoupons.forEach(coupon => {
-      if (coupon.discountType === 'fixed') {
-        totalSavings += coupon.discountValue;
-      }
-      // Note: For percentage discounts, we'd need the original purchase amount
-      // to calculate actual savings, which isn't stored in this model
-    });
-
     res.json({
       message: 'User coupon statistics retrieved successfully',
       stats: {
         totalAvailable,
         totalRedeemed,
         expiredAssigned,
-        totalSavings: totalSavings.toFixed(2),
         redemptionRate: totalAvailable > 0 ? ((totalRedeemed / (totalRedeemed + totalAvailable)) * 100).toFixed(2) : 0
       }
     });

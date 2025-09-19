@@ -48,9 +48,10 @@ const SignupPage = () => {
       return;
     }
 
-    // Validate password length
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    // Validate password strength
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!strongPasswordRegex.test(formData.password)) {
+      setError('Password must be at least 8 characters with uppercase, lowercase, number and special character (@$!%*?&)');
       setLoading(false);
       return;
     }
@@ -227,7 +228,7 @@ const SignupPage = () => {
                     value={formData.password}
                     onChange={handleChange}
                     className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Create a password (min 6 characters)"
+                    placeholder="8+ chars with uppercase, lowercase, number & special char"
                   />
                 </div>
 

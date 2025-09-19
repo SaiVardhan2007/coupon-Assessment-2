@@ -21,13 +21,19 @@ const ProfilePage = () => {
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const [couponsResponse, historyResponse] = await Promise.all([
-        api.get('/api/user/coupons'),
-        api.get('/api/user/usage-history')
+      const [availableCouponsResponse, redeemedCouponsResponse] = await Promise.all([
+        api.get('/api/user/coupons/available'),
+        api.get('/api/user/coupons/redeemed')
       ]);
       
-      setUserCoupons(couponsResponse.data);
-      setUsageHistory(historyResponse.data);
+      // Combine available and redeemed coupons for profile display
+      const allCoupons = [
+        ...availableCouponsResponse.data.map(c => ({ ...c, userStatus: 'available' })),
+        ...redeemedCouponsResponse.data.map(c => ({ ...c, userStatus: 'redeemed' }))
+      ];
+      
+      setUserCoupons(allCoupons);
+      setUsageHistory(redeemedCouponsResponse.data);
       setError('');
     } catch (err) {
       setError('Failed to fetch user data. Please try again.');
@@ -172,14 +178,16 @@ const ProfilePage = () => {
                           <span className="text-sm font-medium text-gray-900">{userCoupons.length}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Active Coupons:</span>
+                          <span className="text-sm text-gray-600">Available Coupons:</span>
                           <span className="text-sm font-medium text-green-600">
-                            {userCoupons.filter(c => c.status === 'active' && new Date(c.expiryDate) > new Date()).length}
+                            {userCoupons.filter(c => c.userStatus === 'available' && c.isActive && new Date(c.expiryDate) > new Date()).length}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Used Coupons:</span>
-                          <span className="text-sm font-medium text-gray-600">{usageHistory.length}</span>
+                          <span className="text-sm text-gray-600">Redeemed Coupons:</span>
+                          <span className="text-sm font-medium text-gray-600">
+                            {userCoupons.filter(c => c.userStatus === 'redeemed').length}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-600">Expired Coupons:</span>
@@ -240,7 +248,7 @@ const ProfilePage = () => {
                               Coupon
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Discount
+                              Type
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Used Date
@@ -251,33 +259,31 @@ const ProfilePage = () => {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {usageHistory.map((usage, index) => (
-                            <tr key={index}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {usage.coupon?.title || usage.couponCode}
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    {usage.coupon?.code || usage.couponCode}
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {usage.coupon?.discountType === 'percentage' 
-                                  ? `${usage.coupon?.discountValue}%` 
-                                  : `$${usage.coupon?.discountValue}`}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatDate(usage.usedAt)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor('used')}`}>
-                                  Used
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
+                      {usageHistory.map((coupon, index) => (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {coupon.couponName}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {coupon.type} coupon
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            Redeemed
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {formatDate(coupon.usedAt || coupon.updatedAt)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor('used')}`}>
+                              Used
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                         </tbody>
                       </table>
                     </div>
