@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { HomePage, LoginPage, SignupPage, CouponsPage, AdminDashboard, CreateCouponPage, CouponDetailsPage, ProfilePage, DemoPage, UserDashboard, AssessmentPage, ExamPage, ExamResultsPage } from './pages';
+import { HomePage, LoginPage, SignupPage, CouponsPage, AdminDashboard, CreateCouponPage, CouponDetailsPage, AssessmentPage, ProfilePage } from './pages';
 import { ProtectedRoute, AdminRoute, Navbar } from './components';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -25,7 +25,6 @@ const AppRoutes = () => {
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/coupons" element={<CouponsPage />} />
-        <Route path="/demo" element={<DemoPage />} />
         
         {/* Auth Routes - redirect to home if already authenticated */}
         <Route 
@@ -47,34 +46,10 @@ const AppRoutes = () => {
         
         {/* Protected Routes */}
         <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
           path="/assessments" 
           element={
             <ProtectedRoute>
               <AssessmentPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/exam/start" 
-          element={
-            <ProtectedRoute>
-              <ExamPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/exam/results" 
-          element={
-            <ProtectedRoute>
-              <ExamResultsPage />
             </ProtectedRoute>
           } 
         />

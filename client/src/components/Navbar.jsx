@@ -60,63 +60,44 @@ const Navbar = () => {
                   >
                     Home
                   </Link>
-                  
-                  <Link
-                    to="/dashboard"
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive('/dashboard') 
-                        ? 'text-indigo-600 bg-indigo-50' 
-                        : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    Dashboard
-                  </Link>
 
-                  <Link
-                    to="/assessments"
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive('/assessments') 
-                        ? 'text-blue-600 bg-blue-50' 
-                        : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    Assessments
-                  </Link>
-
-                  <Link
-                    to="/profile"
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive('/profile') 
-                        ? 'text-green-600 bg-green-50' 
-                        : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
-                    }`}
-                  >
-                    Profile
-                  </Link>
-
-                  {isAdmin && (
+                  {!isAdmin && (
                     <>
                       <Link
-                        to="/admin"
+                        to="/assessments"
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                          isActive('/admin') 
-                            ? 'text-red-600 bg-red-50' 
-                            : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
+                          isActive('/assessments') 
+                            ? 'text-blue-600 bg-blue-50' 
+                            : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
                         }`}
                       >
-                        Admin Panel
+                        Assessments
                       </Link>
+
                       <Link
-                        to="/admin/dashboard"
+                        to="/profile"
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                          isActive('/admin/dashboard') 
-                            ? 'text-purple-600 bg-purple-50' 
-                            : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
+                          isActive('/profile') 
+                            ? 'text-green-600 bg-green-50' 
+                            : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
                         }`}
                       >
-                        Admin Dashboard
+                        Profile
                       </Link>
                     </>
+                  )}
+
+                  {isAdmin && (
+                    <Link
+                      to="/admin/dashboard"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/admin/dashboard') 
+                          ? 'text-purple-600 bg-purple-50' 
+                          : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
+                      }`}
+                    >
+                      Admin Dashboard
+                    </Link>
                   )}
                 </div>
 
@@ -256,68 +237,47 @@ const Navbar = () => {
                 >
                   Home
                 </Link>
-                
-                <Link
-                  to="/dashboard"
-                  onClick={closeMobileMenu}
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    isActive('/dashboard') 
-                      ? 'text-indigo-600 bg-indigo-50' 
-                      : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
-                  }`}
-                >
-                  Dashboard
-                </Link>
 
-                <Link
-                  to="/assessments"
-                  onClick={closeMobileMenu}
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    isActive('/assessments') 
-                      ? 'text-blue-600 bg-blue-50' 
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
-                  }`}
-                >
-                  Assessments
-                </Link>
-
-                <Link
-                  to="/profile"
-                  onClick={closeMobileMenu}
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    isActive('/profile') 
-                      ? 'text-green-600 bg-green-50' 
-                      : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
-                  }`}
-                >
-                  Profile
-                </Link>
-
-                {isAdmin && (
+                {!isAdmin && (
                   <>
                     <Link
-                      to="/admin"
+                      to="/assessments"
                       onClick={closeMobileMenu}
                       className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                        isActive('/admin') 
-                          ? 'text-red-600 bg-red-50' 
-                          : 'text-gray-700 hover:text-red-600 hover:bg-red-50'
+                        isActive('/assessments') 
+                          ? 'text-blue-600 bg-blue-50' 
+                          : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
                       }`}
                     >
-                      Admin Panel
+                      Assessments
                     </Link>
+
                     <Link
-                      to="/admin/dashboard"
+                      to="/profile"
                       onClick={closeMobileMenu}
                       className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                        isActive('/admin/dashboard') 
-                          ? 'text-purple-600 bg-purple-50' 
-                          : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
+                        isActive('/profile') 
+                          ? 'text-green-600 bg-green-50' 
+                          : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
                       }`}
                     >
-                      Admin Dashboard
+                      Profile
                     </Link>
                   </>
+                )}
+
+                {isAdmin && (
+                  <Link
+                    to="/admin/dashboard"
+                    onClick={closeMobileMenu}
+                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                      isActive('/admin/dashboard') 
+                        ? 'text-purple-600 bg-purple-50' 
+                        : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
+                    }`}
+                  >
+                    Admin Dashboard
+                  </Link>
                 )}
 
                 <button

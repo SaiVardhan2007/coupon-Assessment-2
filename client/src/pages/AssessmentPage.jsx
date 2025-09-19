@@ -186,13 +186,32 @@ const AssessmentPage = () => {
     } catch (error) {
       console.error('Error redeeming coupon:', error);
       
+      let errorMessage = 'Failed to redeem coupon. Please try again.';
+      
       if (error.response?.data?.message) {
-        setCouponError(error.response.data.message);
+        const message = error.response.data.message;
+        
+        // Customize error messages for better user experience
+        if (message.includes('already used')) {
+          errorMessage = '🚫 You have already used this coupon. Each coupon can only be used once per user.';
+        } else if (message.includes('expired')) {
+          errorMessage = '⏰ This coupon has expired and can no longer be used.';
+        } else if (message.includes('not active')) {
+          errorMessage = '❌ This coupon is currently inactive.';
+        } else if (message.includes('not authorized')) {
+          errorMessage = '🔒 You are not authorized to use this coupon. Please check if it\'s assigned to you.';
+        } else if (message.includes('usage limit')) {
+          errorMessage = '📊 This coupon has reached its usage limit and can no longer be used.';
+        } else if (message.includes('not found')) {
+          errorMessage = '❓ Coupon not found. Please check the coupon name and try again.';
+        } else {
+          errorMessage = message;
+        }
       } else if (error.response?.data?.error) {
-        setCouponError(error.response.data.error);
-      } else {
-        setCouponError('Failed to redeem coupon. Please try again.');
+        errorMessage = error.response.data.error;
       }
+      
+      setCouponError(errorMessage);
     } finally {
       setIsRedeeming(false);
     }

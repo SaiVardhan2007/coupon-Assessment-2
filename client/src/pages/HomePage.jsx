@@ -19,19 +19,7 @@ const HomePage = () => {
 
           {user ? (
             // Authenticated User Dashboard
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="text-3xl mb-4">🏠</div>
-                <h3 className="text-xl font-semibold mb-2">Dashboard</h3>
-                <p className="text-gray-600 mb-4">View your personalized dashboard</p>
-                <Link
-                  to="/dashboard"
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition-colors inline-block"
-                >
-                  Go to Dashboard
-                </Link>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="text-3xl mb-4">📚</div>
                 <h3 className="text-xl font-semibold mb-2">Assessments</h3>
@@ -46,8 +34,8 @@ const HomePage = () => {
               
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="text-3xl mb-4">🎫</div>
-                <h3 className="text-xl font-semibold mb-2">My Coupons</h3>
-                <p className="text-gray-600 mb-4">View and manage your available coupons</p>
+                <h3 className="text-xl font-semibold mb-2">Available Coupons</h3>
+                <p className="text-gray-600 mb-4">View and redeem available coupons</p>
                 <Link
                   to="/coupons"
                   className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors inline-block"
@@ -56,25 +44,27 @@ const HomePage = () => {
                 </Link>
               </div>
               
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="text-3xl mb-4">📊</div>
-                <h3 className="text-xl font-semibold mb-2">My Profile</h3>
-                <p className="text-gray-600 mb-4">Manage your profile and view usage history</p>
-                <Link
-                  to="/profile"
-                  className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition-colors inline-block"
-                >
-                  View Profile
-                </Link>
-              </div>
+              {user.role !== 'admin' && (
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="text-3xl mb-4">👤</div>
+                  <h3 className="text-xl font-semibold mb-2">My Profile</h3>
+                  <p className="text-gray-600 mb-4">View your profile and usage history</p>
+                  <Link
+                    to="/profile"
+                    className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition-colors inline-block"
+                  >
+                    View Profile
+                  </Link>
+                </div>
+              )}
               
               {user.role === 'admin' && (
-                <div className="bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                <div className="bg-white p-6 rounded-lg shadow-md">
                   <div className="text-3xl mb-4">⚙️</div>
-                  <h3 className="text-xl font-semibold mb-2">Admin Panel</h3>
-                  <p className="text-gray-600 mb-4">Manage users and coupons</p>
+                  <h3 className="text-xl font-semibold mb-2">Admin Dashboard</h3>
+                  <p className="text-gray-600 mb-4">Manage coupons and users</p>
                   <Link
-                    to="/admin"
+                    to="/admin/dashboard"
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors inline-block"
                   >
                     Admin Dashboard

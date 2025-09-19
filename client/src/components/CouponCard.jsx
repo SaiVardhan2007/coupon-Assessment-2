@@ -67,8 +67,10 @@ const CouponCard = ({
               </span>
             </div>
           </div>
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}>
-            {getStatusText()}
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            coupon.userStatus === 'redeemed' ? 'bg-gray-100 text-gray-800' : getStatusColor()
+          }`}>
+            {coupon.userStatus === 'redeemed' ? 'USED' : getStatusText()}
           </span>
         </div>
       </div>
@@ -169,7 +171,12 @@ const CouponCard = ({
         {/* Status Indicators for Non-Admin */}
         {!isAdmin && (
           <div className="pt-4 border-t border-gray-100">
-            {isExpired ? (
+            {coupon.userStatus === 'redeemed' ? (
+              <div className="flex items-center justify-center text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                <span className="mr-2">✅</span>
+                You have already used this coupon
+              </div>
+            ) : isExpired ? (
               <div className="text-center text-sm text-red-600">
                 This coupon has expired
               </div>
