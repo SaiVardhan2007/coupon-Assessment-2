@@ -1,0 +1,14 @@
+export { default as HomePage } from './HomePage';
+export { default as LoginPage } from './LoginPage';
+export { default as SignupPage } from './SignupPage';
+export { default as CouponsPage } from './CouponsPage';
+export { default as AdminPage } from './AdminPage';
+export { default as AdminDashboard } from './AdminDashboard';
+export { default as CreateCouponPage } from './CreateCouponPage';
+export { default as CouponDetailsPage } from './CouponDetailsPage';
+export { default as ProfilePage } from './ProfilePage';
+export { default as DemoPage } from './DemoPage';
+export { default as UserDashboard } from './UserDashboard';
+export { default as AssessmentPage } from './AssessmentPage';
+export { default as ExamPage } from './ExamPage';
+export { default as ExamResultsPage } from './ExamResultsPage';
