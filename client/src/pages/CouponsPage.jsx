@@ -11,11 +11,9 @@ const CouponsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   
-  // Filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     status: 'all', // all, active, expired, inactive
@@ -147,10 +145,8 @@ const CouponsPage = () => {
             </div>
           )}
 
-          {/* Search and Filter */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Search Coupons
@@ -164,7 +160,6 @@ const CouponsPage = () => {
                 />
               </div>
 
-              {/* Status Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Status
@@ -181,7 +176,6 @@ const CouponsPage = () => {
                 </select>
               </div>
 
-              {/* Type Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Type
@@ -197,7 +191,6 @@ const CouponsPage = () => {
                 </select>
               </div>
 
-              {/* Sort */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Sort By

@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  // Initialize auth state on mount
   useEffect(() => {
     initializeAuth();
   }, []);
@@ -25,7 +24,6 @@ export const AuthProvider = ({ children }) => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       try {
-        // Verify token with server
         const response = await api.get('/api/users/verify', {
           headers: {
             Authorization: `Bearer ${storedToken}`
@@ -63,14 +61,11 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         const { user: userData, token: userToken } = response.data.data;
         
-        // Store user and token
         setUser(userData);
         setToken(userToken);
         
-        // Persist token in localStorage
         localStorage.setItem('token', userToken);
         
-        // Set default authorization header for future requests
         api.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
         
         return userData;
@@ -91,14 +86,11 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         const { user: newUser, token: userToken } = response.data.data;
         
-        // Store user and token
         setUser(newUser);
         setToken(userToken);
         
-        // Persist token in localStorage
         localStorage.setItem('token', userToken);
         
-        // Set default authorization header for future requests
         api.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
         
         return newUser;
@@ -116,14 +108,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    // Clear user state
     setUser(null);
     setToken(null);
     
-    // Remove token from localStorage
     localStorage.removeItem('token');
     
-    // Remove authorization header
     delete api.defaults.headers.common['Authorization'];
   };
 
@@ -141,7 +130,6 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Failed to refresh user data:', error);
-      // If token is invalid, logout user
       if (error.response?.status === 401) {
         logout();
       }

@@ -5,7 +5,6 @@ import { HomePage, LoginPage, SignupPage, CouponsPage, AdminDashboard, CreateCou
 import { ProtectedRoute, AdminRoute, Navbar } from './components';
 import LoadingSpinner from './components/LoadingSpinner';
 
-// Public Route Component (redirect to home if authenticated)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
@@ -16,17 +15,15 @@ const PublicRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" />;
 };
 
-// App Routes Component
+
 const AppRoutes = () => {
   return (
     <>
       <Navbar />
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/coupons" element={<CouponsPage />} />
         
-        {/* Auth Routes - redirect to home if already authenticated */}
         <Route 
           path="/login" 
           element={

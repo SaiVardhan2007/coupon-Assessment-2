@@ -7,42 +7,32 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pt-16">
-      {/* Main Content */}
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl font-bold text-gray-800 mb-6">
-            Welcome to Coupon Assessment
+            Welcome to MentorHub
           </h1>
           <p className="text-xl text-gray-600 mb-12">
-            A modern MERN stack application for managing and assessing coupons
+            A modern  application for career mentoring and guidance.
           </p>
 
           {user ? (
-            // Authenticated User Dashboard
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="text-3xl mb-4">📚</div>
-                <h3 className="text-xl font-semibold mb-2">Assessments</h3>
-                <p className="text-gray-600 mb-4">Take tests and track your progress</p>
-                <Link
-                  to="/assessments"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors inline-block"
-                >
-                  Start Assessment
-                </Link>
-              </div>
+              {user.role !== 'admin' && (
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    <div className="text-3xl mb-4">📚</div>
+                    <h3 className="text-xl font-semibold mb-2">Assessments</h3>
+                    <p className="text-gray-600 mb-4">Take tests and track your progress</p>
+                    <Link
+                    to="/assessments"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors inline-block"
+                    >
+                    Start Assessment
+                    </Link>
+                </div>
+              )} 
               
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="text-3xl mb-4">🎫</div>
-                <h3 className="text-xl font-semibold mb-2">Available Coupons</h3>
-                <p className="text-gray-600 mb-4">View and redeem available coupons</p>
-                <Link
-                  to="/coupons"
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors inline-block"
-                >
-                  View Coupons
-                </Link>
-              </div>
               
               {user.role !== 'admin' && (
                 <div className="bg-white p-6 rounded-lg shadow-md">
@@ -57,38 +47,23 @@ const HomePage = () => {
                   </Link>
                 </div>
               )}
-              
-              {user.role === 'admin' && (
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <div className="text-3xl mb-4">⚙️</div>
-                  <h3 className="text-xl font-semibold mb-2">Admin Dashboard</h3>
-                  <p className="text-gray-600 mb-4">Manage coupons and users</p>
-                  <Link
-                    to="/admin/dashboard"
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors inline-block"
-                  >
-                    Admin Dashboard
-                  </Link>
-                </div>
-              )}
             </div>
           ) : (
-            // Guest User Content
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="text-3xl mb-4">⚛️</div>
-                <h3 className="text-xl font-semibold mb-2">React + Vite</h3>
-                <p className="text-gray-600">Fast development with modern React and Vite build tool</p>
+                <div className="text-3xl mb-4">📚</div>
+                <h3 className="text-xl font-semibold mb-2">Assessments</h3>
+                <p className="text-gray-600">Take tests and track your progress</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className="text-3xl mb-4">🎨</div>
-                <h3 className="text-xl font-semibold mb-2">Tailwind CSS</h3>
-                <p className="text-gray-600">Beautiful, responsive UI with utility-first CSS framework</p>
+                <div className="text-3xl mb-4">👤</div>
+                <h3 className="text-xl font-semibold mb-2">Customize</h3>
+                <p className="text-gray-600">Get personalized experience</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="text-3xl mb-4">🚀</div>
-                <h3 className="text-xl font-semibold mb-2">Full Stack Ready</h3>
-                <p className="text-gray-600">Complete MERN stack with Node.js backend integration</p>
+                <h3 className="text-xl font-semibold mb-2">Future ready study plan</h3>
+                <p className="text-gray-600">Get a personalized study plan tailored to your needs</p>
               </div>
             </div>
           )}
@@ -110,7 +85,6 @@ const HomePage = () => {
             </div>
           )}
 
-          {/* Feature Section */}
           <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white p-8 rounded-lg shadow-md">
               <h3 className="text-2xl font-semibold mb-4">For Students</h3>
@@ -136,7 +110,6 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-4 text-center">
           <p>&copy; 2025 Coupon Assessment. Built with MERN Stack.</p>
