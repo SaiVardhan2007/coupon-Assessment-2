@@ -2,17 +2,14 @@ const User = require('../models/user.model');
 const Coupon = require('../models/coupon.model');
 const { sendCouponEmail } = require('../utils/emailService');
 
-// Get all users (admin only)
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}, { password: 0 }).sort({ createdAt: -1 });
     
-    // Add user statistics
     const usersWithStats = await Promise.all(
       users.map(async (user) => {
         const userObj = user.toObject();
         
-        // Count user's coupons
         const totalCoupons = await Coupon.countDocuments({
           assignedUsers: user._id
         });

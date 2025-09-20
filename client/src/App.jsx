@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { HomePage, LoginPage, SignupPage, CouponsPage, AdminDashboard, CreateCouponPage, CouponDetailsPage, AssessmentPage, ProfilePage, ExamPage, ExamResults, ReportPage } from './pages';
+import { HomePage, LoginPage, SignupPage, AdminDashboard, CreateCouponPage, CouponDetailsPage, AssessmentPage, ProfilePage, ExamPage, ExamResults, ReportPage } from './pages';
 import { ProtectedRoute, AdminRoute, Navbar } from './components';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -22,7 +22,6 @@ const AppRoutes = () => {
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/coupons" element={<CouponsPage />} />
         
         <Route 
           path="/login" 
@@ -41,7 +40,6 @@ const AppRoutes = () => {
           } 
         />
         
-        {/* Protected Routes */}
         <Route 
           path="/assessments" 
           element={

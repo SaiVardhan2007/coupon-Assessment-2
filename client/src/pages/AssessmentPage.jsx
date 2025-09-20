@@ -11,14 +11,12 @@ const AssessmentPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   
-  // Coupon modal state
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [selectedTest, setSelectedTest] = useState(null);
   const [couponCode, setCouponCode] = useState('');
   const [couponError, setCouponError] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
 
-  // Career assessment data - AI-driven assessments for career guidance
   const [tests] = useState([
     {
       id: 1,
@@ -144,7 +142,6 @@ const AssessmentPage = () => {
     'Personalized': 'bg-blue-100 text-blue-800'
   };
 
-  // Filter tests based on category and search term
   const filteredTests = tests.filter(test => {
     const matchesCategory = selectedCategory === 'all' || test.category === selectedCategory;
     const matchesSearch = test.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -157,12 +154,10 @@ const AssessmentPage = () => {
     console.log('handleAttemptTest called with test:', test);
     console.log('Current showCouponModal state before:', showCouponModal);
     
-    // Reset all modal states first
     setCouponCode('');
     setCouponError('');
     setIsRedeeming(false);
     
-    // Set the selected test and show modal
     setSelectedTest(test);
     setShowCouponModal(true);
     
@@ -185,7 +180,6 @@ const AssessmentPage = () => {
         couponName: couponCode.trim()
       });
 
-      // Success! Navigate to exam page with assessment info and redemption details
       navigate('/exam', {
         state: {
           assessmentType: selectedTest.assessmentType,
@@ -235,9 +229,7 @@ const AssessmentPage = () => {
     setCouponError('');
   };
 
-  // Temporary bypass function for testing
   const handleBypassCoupon = () => {
-    // For testing purposes, navigate directly to exam page
     navigate('/exam', {
       state: {
         assessmentType: selectedTest.assessmentType,
