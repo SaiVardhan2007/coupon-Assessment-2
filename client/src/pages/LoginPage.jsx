@@ -41,13 +41,6 @@ const LoginPage = () => {
     }
   };
 
-  const fillAdminCredentials = () => {
-    setFormData({
-      email: 'admin@couponassessment.com',
-      password: 'admin123456'
-    });
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -67,21 +60,6 @@ const LoginPage = () => {
             >
               create a new account
             </Link>
-          </p>
-        </div>
-
-        {/* Demo Credentials */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-          <h4 className="text-sm font-medium text-yellow-800 mb-2">Demo Credentials:</h4>
-          <button
-            type="button"
-            onClick={fillAdminCredentials}
-            className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2 py-1 rounded transition-colors"
-          >
-            Fill Admin Credentials
-          </button>
-          <p className="text-xs text-yellow-700 mt-1">
-            Admin: admin@couponassessment.com / admin123456
           </p>
         </div>
 

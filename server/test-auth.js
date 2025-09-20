@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'http://localhost:5020/api';
 
 // Test function
 async function testAuthEndpoints() {
@@ -9,7 +9,7 @@ async function testAuthEndpoints() {
   try {
     // Test 1: Check server status
     console.log('1. Testing server connection...');
-    const healthCheck = await axios.get('http://localhost:5001/');
+    const healthCheck = await axios.get('http://localhost:5020/');
     console.log('✅ Server is running:', healthCheck.data.message);
     console.log();
 
@@ -17,7 +17,7 @@ async function testAuthEndpoints() {
     console.log('2. Testing admin login...');
     const loginResponse = await axios.post(`${API_BASE_URL}/auth/login`, {
       email: 'admin@couponassessment.com',
-      password: 'admin123456'
+      password: 'Admin@123'
     });
     console.log('✅ Admin login successful');
     console.log('📝 Response:', JSON.stringify(loginResponse.data, null, 2));

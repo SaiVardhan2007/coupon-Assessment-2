@@ -3,10 +3,30 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
-  const { user, logout, isAuthenticated, isAdmin } = useAuth();
+  const { user, logout, isAuthenticated, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Show nothing while auth is loading to prevent errors
+  if (loading) {
+    return (
+      <nav className="bg-white shadow-lg fixed top-0 left-0 right-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <Link to="/" className="flex-shrink-0 flex items-center">
+                <span className="text-2xl font-bold text-indigo-600">CouponKarts</span>
+              </Link>
+            </div>
+            <div className="flex items-center">
+              <div className="animate-pulse w-20 h-8 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   const handleLogout = () => {
     logout();
@@ -106,18 +126,18 @@ const Navbar = () => {
                   <div className="flex items-center space-x-2">
                     <div className="flex flex-col text-right">
                       <span className="text-sm font-medium text-gray-700">
-                        {user.name}
+                        {user?.name || 'User'}
                       </span>
                       <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
                         isAdmin 
                           ? 'bg-red-100 text-red-800' 
                           : 'bg-green-100 text-green-800'
                       }`}>
-                        {user.role}
+                        {user?.role || 'User'}
                       </span>
                     </div>
                     <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                      {user.name.charAt(0).toUpperCase()}
+                      {user?.name && user.name.length > 0 ? user.name.charAt(0).toUpperCase() : 'U'}
                     </div>
                   </div>
                   
@@ -208,18 +228,18 @@ const Navbar = () => {
                 <div className="px-3 py-2 border-b border-gray-200 mb-2">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
-                      {user.name.charAt(0).toUpperCase()}
+                      {user?.name && user.name.length > 0 ? user.name.charAt(0).toUpperCase() : 'U'}
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-700">
-                        {user.name}
+                        {user?.name || 'User'}
                       </div>
                       <div className={`text-xs font-semibold px-2 py-1 rounded-full inline-block ${
                         isAdmin 
                           ? 'bg-red-100 text-red-800' 
                           : 'bg-green-100 text-green-800'
                       }`}>
-                        {user.role}
+                        {user?.role || 'User'}
                       </div>
                     </div>
                   </div>

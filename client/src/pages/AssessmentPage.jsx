@@ -18,120 +18,130 @@ const AssessmentPage = () => {
   const [couponError, setCouponError] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
 
-  // Hardcoded test data for now - this will be replaced with API calls later
+  // Career assessment data - AI-driven assessments for career guidance
   const [tests] = useState([
     {
       id: 1,
-      title: "Mathematics Fundamentals",
-      description: "Test your basic mathematical skills including arithmetic, algebra, and geometry.",
-      category: "mathematics",
-      difficulty: "Beginner",
-      duration: 30,
-      questions: 25,
-      topics: ["Arithmetic", "Basic Algebra", "Geometry"],
-      icon: "🔢",
-      color: "bg-blue-500"
+      title: "Stream Finder",
+      description: "Discover the perfect academic stream based on your interests, strengths, and career aspirations.",
+      category: "career",
+      difficulty: "Personalized",
+      duration: "15-20 min",
+      questions: "8-10 adaptive",
+      topics: ["Academic Interests", "Career Goals", "Strengths Assessment", "Future Planning"],
+      icon: "🎯",
+      color: "bg-blue-500",
+      assessmentType: "Stream Finder"
     },
     {
       id: 2,
-      title: "English Grammar & Vocabulary",
-      description: "Assess your English language proficiency with grammar rules and vocabulary.",
-      category: "english",
-      difficulty: "Intermediate",
-      duration: 45,
-      questions: 30,
-      topics: ["Grammar Rules", "Vocabulary", "Reading Comprehension"],
-      icon: "📚",
-      color: "bg-green-500"
+      title: "Career Path Explorer",
+      description: "Explore various career paths that align with your personality, skills, and interests.",
+      category: "career",
+      difficulty: "Personalized",
+      duration: "20-25 min", 
+      questions: "8-10 adaptive",
+      topics: ["Personality Assessment", "Skill Evaluation", "Industry Preferences", "Work Environment"],
+      icon: "�",
+      color: "bg-green-500",
+      assessmentType: "Career Path Explorer"
     },
     {
       id: 3,
-      title: "Science - Physics Basics",
-      description: "Fundamental concepts in physics including mechanics, energy, and waves.",
-      category: "science",
-      difficulty: "Intermediate",
-      duration: 40,
-      questions: 20,
-      topics: ["Mechanics", "Energy", "Waves", "Heat"],
-      icon: "⚛️",
-      color: "bg-purple-500"
+      title: "Skill Gap Analysis",
+      description: "Identify skill gaps and get personalized recommendations for your chosen career path.",
+      category: "skill",
+      difficulty: "Personalized",
+      duration: "15-20 min",
+      questions: "8-10 adaptive",
+      topics: ["Current Skills", "Target Role Requirements", "Learning Recommendations", "Development Plan"],
+      icon: "📈",
+      color: "bg-purple-500",
+      assessmentType: "Skill Gap Analysis"
     },
     {
       id: 4,
-      title: "Chemistry Fundamentals",
-      description: "Basic chemistry concepts including atomic structure, bonding, and reactions.",
-      category: "science",
-      difficulty: "Beginner",
-      duration: 35,
-      questions: 25,
-      topics: ["Atomic Structure", "Chemical Bonding", "Reactions"],
-      icon: "🧪",
-      color: "bg-red-500"
+      title: "Personality & Work Style",
+      description: "Understand your personality type and discover work environments where you'll thrive.",
+      category: "personality",
+      difficulty: "Personalized",
+      duration: "15-20 min",
+      questions: "8-10 adaptive",
+      topics: ["Personality Traits", "Work Preferences", "Team Dynamics", "Leadership Style"],
+      icon: "🎭",
+      color: "bg-red-500",
+      assessmentType: "Personality & Work Style"
     },
     {
       id: 5,
-      title: "World History",
-      description: "Test your knowledge of major historical events and civilizations.",
-      category: "history",
-      difficulty: "Intermediate",
-      duration: 50,
-      questions: 35,
-      topics: ["Ancient Civilizations", "Medieval Period", "Modern History"],
-      icon: "🏛️",
-      color: "bg-yellow-500"
+      title: "Academic Subject Optimizer",
+      description: "Get recommendations for optional subjects and specializations based on your career goals.",
+      category: "academic",
+      difficulty: "Personalized",
+      duration: "15-20 min",
+      questions: "8-10 adaptive",
+      topics: ["Subject Preferences", "Career Alignment", "Academic Strengths", "Future Requirements"],
+      icon: "📚",
+      color: "bg-yellow-500",
+      assessmentType: "Academic Subject Optimizer"
     },
     {
       id: 6,
-      title: "Geography & Environment",
-      description: "Physical and political geography along with environmental science.",
-      category: "geography",
-      difficulty: "Beginner",
-      duration: 30,
-      questions: 20,
-      topics: ["Physical Geography", "Countries & Capitals", "Climate"],
-      icon: "🌍",
-      color: "bg-indigo-500"
+      title: "University & Course Finder",
+      description: "Discover universities and courses that match your academic profile and career aspirations.",
+      category: "education",
+      difficulty: "Personalized",
+      duration: "20-25 min",
+      questions: "8-10 adaptive",
+      topics: ["Academic Performance", "Location Preferences", "Course Requirements", "Career Goals"],
+      icon: "�",
+      color: "bg-indigo-500",
+      assessmentType: "University & Course Finder"
     },
     {
       id: 7,
-      title: "Computer Science Basics",
-      description: "Introduction to programming concepts and computer fundamentals.",
-      category: "computer",
-      difficulty: "Beginner",
-      duration: 45,
-      questions: 30,
-      topics: ["Programming Logic", "Data Structures", "Algorithms"],
-      icon: "💻",
-      color: "bg-teal-500"
+      title: "Entrepreneurship Readiness",
+      description: "Assess your entrepreneurial potential and get guidance on starting your own venture.",
+      category: "entrepreneurship",
+      difficulty: "Personalized",
+      duration: "20-25 min",
+      questions: "8-10 adaptive",
+      topics: ["Risk Tolerance", "Innovation Mindset", "Leadership Skills", "Business Acumen"],
+      icon: "�",
+      color: "bg-teal-500",
+      assessmentType: "Entrepreneurship Readiness"
     },
     {
       id: 8,
-      title: "Advanced Mathematics",
-      description: "Complex mathematical concepts including calculus and statistics.",
-      category: "mathematics",
-      difficulty: "Advanced",
-      duration: 60,
-      questions: 40,
-      topics: ["Calculus", "Statistics", "Linear Algebra"],
-      icon: "📊",
-      color: "bg-blue-600"
+      title: "Industry Trends & Future Skills",
+      description: "Stay ahead with insights on industry trends and future skill requirements.",
+      category: "trends",
+      difficulty: "Personalized",
+      duration: "15-20 min",
+      questions: "8-10 adaptive",
+      topics: ["Industry Analysis", "Future Skills", "Technology Trends", "Market Demands"],
+      icon: "�",
+      color: "bg-cyan-500",
+      assessmentType: "Industry Trends & Future Skills"
     }
   ]);
 
   const categories = [
-    { value: 'all', label: 'All Categories', icon: '📋' },
-    { value: 'mathematics', label: 'Mathematics', icon: '🔢' },
-    { value: 'english', label: 'English', icon: '📚' },
-    { value: 'science', label: 'Science', icon: '⚛️' },
-    { value: 'history', label: 'History', icon: '🏛️' },
-    { value: 'geography', label: 'Geography', icon: '🌍' },
-    { value: 'computer', label: 'Computer Science', icon: '💻' }
+    { value: 'all', label: 'All Assessments', icon: '📋' },
+    { value: 'career', label: 'Career Guidance', icon: '🚀' },
+    { value: 'skill', label: 'Skill Assessment', icon: '�' },
+    { value: 'personality', label: 'Personality', icon: '🎭' },
+    { value: 'academic', label: 'Academic Planning', icon: '📚' },
+    { value: 'education', label: 'Education Path', icon: '�' },
+    { value: 'entrepreneurship', label: 'Entrepreneurship', icon: '💡' },
+    { value: 'trends', label: 'Future Trends', icon: '�' }
   ];
 
   const difficultyColors = {
     'Beginner': 'bg-green-100 text-green-800',
     'Intermediate': 'bg-yellow-100 text-yellow-800',
-    'Advanced': 'bg-red-100 text-red-800'
+    'Advanced': 'bg-red-100 text-red-800',
+    'Personalized': 'bg-blue-100 text-blue-800'
   };
 
   // Filter tests based on category and search term
@@ -175,9 +185,10 @@ const AssessmentPage = () => {
         couponName: couponCode.trim()
       });
 
-      // Success! Navigate to exam page with test info and redemption details
-      navigate('/exam/start', {
+      // Success! Navigate to exam page with assessment info and redemption details
+      navigate('/exam', {
         state: {
+          assessmentType: selectedTest.assessmentType,
           testInfo: selectedTest,
           redemptionDetails: response.data
         }
@@ -222,6 +233,24 @@ const AssessmentPage = () => {
     setSelectedTest(null);
     setCouponCode('');
     setCouponError('');
+  };
+
+  // Temporary bypass function for testing
+  const handleBypassCoupon = () => {
+    // For testing purposes, navigate directly to exam page
+    navigate('/exam', {
+      state: {
+        assessmentType: selectedTest.assessmentType,
+        testInfo: selectedTest,
+        redemptionDetails: {
+          message: 'Test mode - coupon bypassed',
+          redemption: {
+            coupon: { name: 'TEST_MODE' },
+            user: { name: user?.name || 'Test User' }
+          }
+        }
+      }
+    });
   };
 
   // Redirect if not authenticated

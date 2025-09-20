@@ -121,16 +121,63 @@ const login = async (req, res) => {
 
     // Check for admin credentials first
     if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-      // Use a valid ObjectId for admin
-      const adminId = '507f1f77bcf86cd799439011'; // Valid ObjectId format
+      // Try to find existing admin user in database
+      let adminUser = await User.findByEmail(email);
       
-      // Generate JWT for admin
+      if (!adminUser) {
+        // Create admin user if it doesn't exist
+        try {
+          adminUser = new User({
+            name: 'Administrator',
+            email: process.env.ADMIN_EMAIL,
+            password: process.env.ADMIN_PASSWORD,
+            phone: '+1234567890',
+            currentStudies: '12',
+            city: 'Admin City',
+            state: 'Admin State',
+            role: 'admin',
+            isActive: true
+          });
+          await adminUser.save();
+          console.log('✅ Admin user created in database');
+        } catch (createError) {
+          console.error('Failed to create admin user:', createError);
+          // Fall back to hardcoded admin if creation fails
+          const adminId = '507f1f77bcf86cd799439011';
+          const token = jwt.sign(
+            {
+              id: adminId,
+              name: 'Administrator',
+              email: process.env.ADMIN_EMAIL,
+              role: 'admin'
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+          );
+          
+          return res.status(200).json({
+            success: true,
+            message: 'Admin login successful',
+            data: {
+              user: {
+                id: adminId,
+                name: 'Administrator',
+                email: process.env.ADMIN_EMAIL,
+                role: 'admin'
+              },
+              token
+            }
+          });
+        }
+      }
+      
+      // Generate JWT for admin using real database user
       const token = jwt.sign(
         {
-          id: adminId,
-          name: 'Administrator',
-          email: process.env.ADMIN_EMAIL,
-          role: 'admin'
+          id: adminUser._id,
+          name: adminUser.name,
+          email: adminUser.email,
+          role: adminUser.role
         },
         process.env.JWT_SECRET,
         {
@@ -143,10 +190,10 @@ const login = async (req, res) => {
         message: 'Admin login successful',
         data: {
           user: {
-            id: adminId,
-            name: 'Administrator',
-            email: process.env.ADMIN_EMAIL,
-            role: 'admin'
+            id: adminUser._id,
+            name: adminUser.name,
+            email: adminUser.email,
+            role: adminUser.role
           },
           token
         }

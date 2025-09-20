@@ -8,6 +8,14 @@ const redeemCoupon = async (req, res) => {
     const { couponName } = req.body;
     const userId = req.user.id;
 
+    // Add debugging
+    console.log('Coupon redemption request:', {
+      couponName,
+      userId,
+      userRole: req.user.role,
+      userEmail: req.user.email
+    });
+
     // Validate input - couponName is required
     if (!couponName) {
       return res.status(400).json({ 
@@ -15,10 +23,27 @@ const redeemCoupon = async (req, res) => {
       });
     }
 
+    // Validate userId
+    if (!userId) {
+      return res.status(400).json({ 
+        message: 'User ID is required' 
+      });
+    }
+
     // Find the coupon by couponName
+    console.log('Searching for coupon:', couponName);
     const coupon = await Coupon.findOne({ couponName })
       .populate('assignedUsers', 'name email')
-      .populate('usedBy', 'name email');
+      .populate('usedBy.user', 'name email');
+
+    console.log('Coupon found:', coupon ? {
+      id: coupon._id,
+      name: coupon.couponName,
+      type: coupon.type,
+      isActive: coupon.isActive,
+      usageCount: coupon.usageCount,
+      maxUses: coupon.maxUses
+    } : 'Not found');
 
     if (!coupon) {
       return res.status(404).json({ 
@@ -54,8 +79,8 @@ const redeemCoupon = async (req, res) => {
       }
 
       // Check if user has already used this coupon
-      const hasUserUsedCoupon = coupon.usedBy.some(usedUserId => 
-        usedUserId.toString() === userId.toString()
+      const hasUserUsedCoupon = coupon.usedBy.some(usage => 
+        usage.user.toString() === userId.toString()
       );
 
       if (hasUserUsedCoupon) {
@@ -73,8 +98,8 @@ const redeemCoupon = async (req, res) => {
       }
 
       // Check if user has already used this coupon
-      const hasUserUsedCoupon = coupon.usedBy.some(usedUserId => 
-        usedUserId.toString() === userId.toString()
+      const hasUserUsedCoupon = coupon.usedBy.some(usage => 
+        usage.user.toString() === userId.toString()
       );
 
       if (hasUserUsedCoupon) {
@@ -85,7 +110,10 @@ const redeemCoupon = async (req, res) => {
     }
 
     // All validations passed - redeem the coupon
-    coupon.usedBy.push(userId);
+    coupon.usedBy.push({
+      user: userId,
+      usedAt: new Date()
+    });
     coupon.usageCount += 1;
 
     // If this is a general coupon and it has reached max uses, deactivate it
@@ -98,11 +126,16 @@ const redeemCoupon = async (req, res) => {
 
     // Get user info for response
     const user = await User.findById(userId, 'name email');
+    if (!user) {
+      return res.status(404).json({ 
+        message: 'User not found' 
+      });
+    }
 
     // Populate the updated coupon for response
     const updatedCoupon = await Coupon.findById(coupon._id)
       .populate('assignedUsers', 'name email')
-      .populate('usedBy', 'name email');
+      .populate('usedBy.user', 'name email');
 
     // Send redemption confirmation email (async, don't wait for it)
     sendCouponEmail(
@@ -145,6 +178,11 @@ const redeemCoupon = async (req, res) => {
 
   } catch (error) {
     console.error('Error redeeming coupon:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
     
     if (error.name === 'CastError') {
       return res.status(400).json({ 
@@ -161,7 +199,8 @@ const redeemCoupon = async (req, res) => {
     }
     
     res.status(500).json({ 
-      message: 'Server error while redeeming coupon' 
+      message: 'Server error while redeeming coupon',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -187,6 +226,7 @@ const getAvailableCoupons = async (req, res) => {
     // Find all potentially available coupons
     const coupons = await Coupon.find(query)
       .populate('assignedUsers', 'name email')
+      .populate('usedBy.user', 'name email')
       .sort({ createdAt: -1 });
 
     // Filter coupons based on user eligibility
@@ -200,8 +240,8 @@ const getAvailableCoupons = async (req, res) => {
       }
 
       // Check if user has already used this coupon
-      const hasUsed = coupon.usedBy.some(usedUserId => 
-        usedUserId.toString() === userId.toString()
+      const hasUsed = coupon.usedBy.some(usage => 
+        usage.user._id.toString() === userId.toString()
       );
       
       return !hasUsed;
@@ -228,13 +268,19 @@ const getRedeemedCoupons = async (req, res) => {
 
     // Find all coupons where user is in usedBy array
     const redeemedCoupons = await Coupon.find({
-      usedBy: userId
+      'usedBy.user': userId
     })
     .populate('assignedUsers', 'name email')
+    .populate('usedBy.user', 'name email')
     .sort({ updatedAt: -1 });
 
     // Transform the data to include redemption details
     const redemptionHistory = redeemedCoupons.map(coupon => {
+      // Find this user's usage entry to get the exact redemption time
+      const userUsage = coupon.usedBy.find(usage => 
+        usage.user._id.toString() === userId.toString()
+      );
+      
       return {
         coupon: {
           id: coupon._id,
@@ -245,7 +291,7 @@ const getRedeemedCoupons = async (req, res) => {
           maxUses: coupon.maxUses,
           isActive: coupon.isActive
         },
-        redeemedAt: coupon.updatedAt // Using updatedAt as approximation since we don't store individual redemption times
+        redeemedAt: userUsage ? userUsage.usedAt : coupon.updatedAt
       };
     });
 

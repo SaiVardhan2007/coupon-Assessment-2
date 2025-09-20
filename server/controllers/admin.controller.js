@@ -19,7 +19,7 @@ const getAllUsers = async (req, res) => {
         
         const activeCoupons = await Coupon.countDocuments({
           assignedUsers: user._id,
-          status: 'active',
+          isActive: true,
           expiryDate: { $gte: new Date() }
         });
         
@@ -196,7 +196,7 @@ const getCouponStats = async (req, res) => {
   try {
     const totalCoupons = await Coupon.countDocuments({});
     const activeCoupons = await Coupon.countDocuments({ 
-      status: 'active',
+      isActive: true,
       expiryDate: { $gte: new Date() }
     });
     const expiredCoupons = await Coupon.countDocuments({
@@ -414,14 +414,85 @@ const createCoupon = async (req, res) => {
 // Get all coupons (admin only)
 const getCoupons = async (req, res) => {
   try {
-    const coupons = await Coupon.find({})
-      .populate('assignedUsers', 'name email')
-      .sort({ createdAt: -1 });
+    console.log('📋 Admin getCoupons: Fetching all coupons...');
+    
+    // First try to get coupons without populate to avoid structure issues
+    let coupons;
+    try {
+      coupons = await Coupon.find({}).sort({ createdAt: -1 });
+      console.log(`📊 Found ${coupons.length} raw coupons`);
+      
+      // Now try to populate safely
+      const populatedCoupons = await Coupon.find({})
+        .populate('assignedUsers', 'name email')
+        .sort({ createdAt: -1 });
+      
+      // Try to populate usedBy.user if the structure is correct
+      const fullyPopulatedCoupons = [];
+      for (const coupon of populatedCoupons) {
+        try {
+          const populatedCoupon = await Coupon.findById(coupon._id)
+            .populate('assignedUsers', 'name email')
+            .populate('usedBy.user', 'name email');
+          fullyPopulatedCoupons.push(populatedCoupon);
+        } catch (populateError) {
+          console.warn(`⚠️ Could not populate usedBy for coupon ${coupon.couponName}:`, populateError.message);
+          // Use the basic populated version
+          fullyPopulatedCoupons.push(coupon);
+        }
+      }
+      
+      coupons = fullyPopulatedCoupons;
+      
+    } catch (populateError) {
+      console.warn('⚠️ Populate failed, using raw coupons:', populateError.message);
+      coupons = await Coupon.find({}).sort({ createdAt: -1 });
+    }
 
-    res.json(coupons);
+    // Check for coupons that should be automatically deactivated
+    const updatedCoupons = [];
+    for (const coupon of coupons) {
+      let shouldUpdate = false;
+      
+      // Auto-deactivate general coupons that have reached max usage
+      if (coupon.type === 'general' && 
+          coupon.isActive && 
+          coupon.usageCount >= coupon.maxUses) {
+        coupon.isActive = false;
+        shouldUpdate = true;
+      }
+      
+      // Auto-deactivate expired coupons
+      if (coupon.isActive && new Date() > coupon.expiryDate) {
+        coupon.isActive = false;
+        shouldUpdate = true;
+      }
+      
+      if (shouldUpdate) {
+        try {
+          await coupon.save();
+          console.log(`🔄 Updated coupon: ${coupon.couponName}`);
+        } catch (saveError) {
+          console.warn(`⚠️ Could not save coupon ${coupon.couponName}:`, saveError.message);
+        }
+      }
+      
+      updatedCoupons.push(coupon);
+    }
+
+    console.log('✅ Admin getCoupons: Sending response');
+    res.json(updatedCoupons);
   } catch (error) {
-    console.error('Error fetching coupons:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ Error fetching coupons:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack?.split('\n').slice(0, 5).join('\n')
+    });
+    res.status(500).json({ 
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -430,7 +501,7 @@ const getCouponDetails = async (req, res) => {
   try {
     const coupon = await Coupon.findById(req.params.id)
       .populate('assignedUsers', 'name email phone currentStudies city state')
-      .populate('usedBy', 'name email phone');
+      .populate('usedBy.user', 'name email phone');
 
     if (!coupon) {
       return res.status(404).json({ message: 'Coupon not found' });

@@ -7,3 +7,6 @@ export { default as CreateCouponPage } from './CreateCouponPage';
 export { default as CouponDetailsPage } from './CouponDetailsPage';
 export { default as AssessmentPage } from './AssessmentPage';
 export { default as ProfilePage } from './ProfilePage';
+export { default as ExamPage } from './ExamPage';
+export { default as ExamResults } from './ExamResults';
+export { default as ReportPage } from './ReportPage';
