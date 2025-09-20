@@ -344,6 +344,7 @@ const createCoupon = async (req, res) => {
       // Send emails to all assigned users (don't await to avoid blocking the response)
       const emailPromises = populatedCoupon.assignedUsers.map(async (user) => {
         try {
+          console.log(`📤 Attempting to send email to ${user.email}...`);
           const emailResult = await sendCouponEmail(
             user.email,
             user.name,
@@ -358,15 +359,20 @@ const createCoupon = async (req, res) => {
             'assignment'
           );
           
-          if (emailResult.success) {
-            console.log(`✅ Assignment email sent to ${user.email}`);
+          if (emailResult && emailResult.success) {
+            console.log(`✅ Assignment email sent successfully to ${user.email}`, {
+              messageId: emailResult.messageId
+            });
           } else {
-            console.error(`❌ Failed to send assignment email to ${user.email}:`, emailResult.error);
+            console.error(`❌ Failed to send assignment email to ${user.email}:`, emailResult?.error || 'Unknown error');
           }
           
           return emailResult;
         } catch (error) {
-          console.error(`❌ Error sending assignment email to ${user.email}:`, error.message);
+          console.error(`❌ Exception sending assignment email to ${user.email}:`, {
+            message: error.message,
+            stack: error.stack?.split('\n')[0]
+          });
           return { success: false, error: error.message, recipient: user.email };
         }
       });
